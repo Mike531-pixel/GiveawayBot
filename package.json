@@ -1,0 +1,12 @@
+{
+  "main": "src/index.js",
+  "version": "1.0.0",
+  "description": "A clone of the original GiveawayBot#2381 bot written in discord.js and mongoose.",
+  "author": "Itz Random",
+  "license": "ISC",
+  "dependencies": {
+    "discord-hybrid-sharding": "^2.2.3",
+    "discord.js": "^14.16.3",
+    "mongoose": "^7.8.2"
+  }
+}
