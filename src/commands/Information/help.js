@@ -13,19 +13,19 @@ module.exports = {
           .setColor(guildData.embedColor)
           .addFields({
             name: `General Commands`,
-            value: `\`/gabout\`\n\`/gping\`\n\`/ginvite\``,
+            value: `\`/about\`\n\`/ping\`\n\`/invite\``,
           })
           .addFields({
             name: `Giveaway Creation Commands`,
-            value: `\`/gstart\`\n\`/gcreate\``,
+            value: `\`/start\`\n\`/create\``,
           })
           .addFields({
             name: `Giveaway Manipulation Commands`,
-            value: `\`/gend\`\n\`/gdelete\`\n\`/greroll\`\n\`/glist\``,
+            value: `\`/end\`\n\`/delete\`\n\`/reroll\`\n\`/list\``,
           })
           .addFields({
             name: `GiveawayBot Settings Commands`,
-            value: `\`/gsettings show\`\n\`/gsettings set color\`\n\`/gsettings set emoji\``,
+            value: `\`/settings\`\n\`/setcolor\`\n\`/setemoji\``,
           }),
       ],
     });
