@@ -18,8 +18,13 @@ To install and run the bot locally, follow these steps:
    ```bash
    npm install
    ```
-
-4. **Start the bot:**
+4. **Fill in the details in `Settings.js`:**
+   - Open the `Settings.js` file.
+   - Add your bot token and MongoDB connection string:
+   ```javascript
+   TOKEN: "your-bot-token-here",
+   MongoDB: "your-mongodb-connection-string-here",
+5. **Start the bot:**
    ```bash
    npm start
    ```
