@@ -27,7 +27,7 @@ module.exports = {
           })
           .addFields({
             name: "🌐 Links",
-            value: `[Source Code](https://github.com/ItzRandom23/GiveawayBot)\n[Support](https://discord.gg/cool-music-support-925619107460698202)`,
+            value: `[Source Code](https://github.com/ItzRandom23/GiveawayBot)\n[Support](https://discord.gg/yfhtR5RJ)`,
             inline: true,
           }),
       ],
