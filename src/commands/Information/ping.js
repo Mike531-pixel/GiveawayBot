@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
-  name: "gping",
+  name: "ping",
   description: "check if bot is online",
   /**
    * @param {{ client: import("../../structures/Client"), context: import("discord.js").ChatInputCommandInteraction | import("discord.js").Message }}
