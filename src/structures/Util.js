@@ -151,6 +151,7 @@ class Util {
     const channel = await this.client.channels.fetch(GiveawayData.channelId);
     const message = await channel.messages.fetch(giveawayId);
     const guildData = await data.findOne({ id: GiveawayData.id });
+    const endTime = Date.now();
     GiveawayData.isActive = false;
     await GiveawayData.save();
     if (GiveawayData.participants.length === 0) {
@@ -158,11 +159,9 @@ class Util {
         .setColor("#313338")
         .setTitle(`**${GiveawayData.prize}**`)
         .setDescription(
-          `Ends: <t:${Math.floor(
-            GiveawayData.endTime / 1000
-          )}:R> (<t:${Math.floor(
-            GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
+          `Ends: <t:${Math.floor(endTime / 1000)}:R> (<t:${Math.floor(
+          endTime / 1000
+        )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: `
         )
         .setTimestamp();

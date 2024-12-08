@@ -3,9 +3,10 @@ const {
   ChatInputCommandInteraction,
   EmbedBuilder,
   PermissionFlagsBits,
-  InteractionType
+  InteractionType,
 } = require("discord.js");
 const guildSchema = require("../models/Guild");
+const GiveawayData = require("../models/GiveawayData");
 
 /**
  * @param {import("../structures/Client")} client
@@ -18,16 +19,21 @@ module.exports = async (client, interaction) => {
     if (interaction.commandName === "end") {
       try {
         const focusedValue = interaction.options.getFocused();
-        const activeGiveaways = await guildSchema.findOne({
+        const activeGiveaways = await GiveawayData.find({
+          id: interaction.guild.id,
           isActive: true,
         });
-console.log(activeGiveaways)
+
+        const giveaways = Array.isArray(activeGiveaways) ? activeGiveaways : [];
+
         let choices = [];
-        if (activeGiveaways.length) {
-          choices = activeGiveaways.map((giveaway) => ({
-            name: `${giveaway.prize} (${giveaway.messageId})`,
-            value: giveaway.messageId,
-          }));
+        if (giveaways.length > 0) {
+          giveaways.forEach((giveaway) => {
+            choices.push({
+              name: `${giveaway.prize} (${giveaway.messageId})`,
+              value: giveaway.messageId,
+            });
+          });
         } else {
           choices.push({
             name: "No active giveaways found",
@@ -51,6 +57,7 @@ console.log(activeGiveaways)
       }
     }
   }
+
   if (interaction instanceof ChatInputCommandInteraction) {
     let guildData = async () => {
       if (await guildSchema.findOne({ id: interaction.guildId })) {
@@ -60,64 +67,15 @@ console.log(activeGiveaways)
       }
     };
     guildData = await guildData();
-    const emojis = client.settings.emojis;
     const command = client.commands.get(interaction.commandName);
-    
-    if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
-      
-      if (interaction.commandName === "end") {
-        console.log("Command is 'end'"); 
-        const focusedOption = interaction.options.getFocused();
-        console.log("Focused option:", focusedOption); 
-  
-        let activeGiveaways;
-        try {
-          activeGiveaways = await guildSchema.find({
-            guildId: interaction.guild.id,
-            isActive: true,
-          });
-        } catch (error) {
-          console.error("Error fetching active giveaways:", error);
-          return interaction.respond([{
-            name: "Error fetching giveaways",
-            value: "error",
-          }]);
-        }
-  
-        if (!activeGiveaways || activeGiveaways.length === 0) {
-          console.log("No active giveaways found.");
-          return interaction.respond([{
-            name: "No active giveaways found",
-            value: "none",
-          }]);
-        }
-  
-        const choices = activeGiveaways.map((giveaway) => ({
-          name: `${giveaway.prize} (${giveaway.messageId})`,
-          value: giveaway.messageId,
-        }));
-  
-        console.log("Choices:", choices);  
-  
-        const filteredChoices = choices.filter((choice) =>
-          choice.name.toLowerCase().includes(focusedOption.toLowerCase())
-        );
-  
-        await interaction.respond(filteredChoices.slice(0, 25));
-      }
-    }
-
 
     if (command) {
-  
       if (interaction.commandName === "list") {
         await interaction.deferReply();
-    } else if (interaction.commandName !== "create") {
+      } else if (interaction.commandName !== "create") {
         await interaction.deferReply({ ephemeral: true });
-    }
-    
+      }
 
-   
       if (
         !interaction.guild.members.me.permissions.has(
           PermissionFlagsBits.SendMessages
@@ -200,7 +158,4 @@ console.log(activeGiveaways)
       );
     }
   }
-
 };
-
-

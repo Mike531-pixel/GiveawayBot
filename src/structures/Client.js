@@ -28,7 +28,7 @@ class GiveawayBot extends Client {
       presence: {
         activities: [
           {
-            name: `Made by Itz Random`,
+            name: `🎉 Hosting Giveaways `,
             type: ActivityType.Custom,
           },
         ],
