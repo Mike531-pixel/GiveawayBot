@@ -31,7 +31,7 @@ To install and run the bot locally, follow these steps:
 
 ## Support
 
-For support and to join our community, visit our [Discord server](https://discord.gg/cool-music-support-925619107460698202).
+For support and to join our community, visit our [Discord server](https://discord.gg/ZmyjpJ5RFq).
 
 ## Contributing
 
