@@ -20,5 +20,6 @@ module.exports = async (client) => {
       })
     })
     await rest.put(Routes.applicationCommands(client.user.id), { body: appCommand });
+    client.rest = rest;
   }
 };

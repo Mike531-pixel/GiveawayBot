@@ -2,7 +2,6 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  Collection,
   EmbedBuilder,
   Message,
 } = require("discord.js");
@@ -69,8 +68,7 @@ class Util {
             GiveawayData.endTime / 1000
           )}:R> (<t:${Math.floor(
             GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${
-            GiveawayData.entryCount
+          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: **${GiveawayData.winnersCount}**`
         )
         .setTimestamp();
@@ -85,8 +83,7 @@ class Util {
             GiveawayData.endTime / 1000
           )}:R> (<t:${Math.floor(
             GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${
-            GiveawayData.entryCount
+          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: **${GiveawayData.winnersCount}**`
         )
         .setTimestamp();
@@ -95,17 +92,58 @@ class Util {
     }
   }
 
+  async  fetchMessageByApi(client, channelId, messageId) {
+    try {
+      
+      const response = await client.rest.get(`/channels/${channelId}/messages/${messageId}`);
+      
+      const message = new Message(client, response, client.channels.cache.get(channelId));
+      
+      return message;
+    } catch (error) {
+      if (error?.message && error.message.includes('Unknown Message')) {
+        console.log(`Message with ID ${messageId} no longer exists.`);
+        return null; 
+      }
+ 
+      console.error("Error fetching message by API:", error);
+      return null; 
+    }
+  }
+  
+
   async checkGiveawayEnd(giveawayId) {
     const GiveawayData = await gwdata.findOne({ messageId: giveawayId });
 
     if (!GiveawayData || !GiveawayData.isActive) return;
 
-    const currentTime = Date.now();
-    if (currentTime >= GiveawayData.endTime) {
-      GiveawayData.isActive = false;
-      await GiveawayData.save();
+    const channel = await this.client.channels.fetch(GiveawayData.channelId).catch(() => null);
+    if (!channel) {
+      console.log(`Channel with ID ${GiveawayData.channelId} no longer exists. Deleting giveaway.`);
+      await GiveawayData.deleteOne();
+      return;
+    }
 
-      await this.endGiveawayEmbed(giveawayId, GiveawayData);
+    try {
+
+      const message = await this.fetchMessageByApi(this.client, GiveawayData.channelId, GiveawayData.messageId);
+
+      if (!message) {
+        console.log(`Message with ID ${GiveawayData.messageId} no longer exists. Deleting giveaway.`);
+        await GiveawayData.deleteOne();
+        console.log("Deleted giveaway document successfully.");
+        return;
+      }
+
+      const currentTime = Date.now();
+      if (currentTime >= GiveawayData.endTime) {
+        GiveawayData.isActive = false;
+        await GiveawayData.save();
+
+        await this.endGiveawayEmbed(giveawayId, GiveawayData);
+      }
+    } catch (error) {
+      console.error("Error fetching message:", error);
     }
   }
 
@@ -124,8 +162,7 @@ class Util {
             GiveawayData.endTime / 1000
           )}:R> (<t:${Math.floor(
             GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${
-            GiveawayData.entryCount
+          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: `
         )
         .setTimestamp();
@@ -158,8 +195,7 @@ class Util {
             GiveawayData.endTime / 1000
           )}:R> (<t:${Math.floor(
             GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${
-            GiveawayData.entryCount
+          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: **${winnerMentions}**`
         )
         .setTimestamp();
@@ -194,8 +230,7 @@ class Util {
             GiveawayData.endTime / 1000
           )}:R> (<t:${Math.floor(
             GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${
-            GiveawayData.entryCount
+          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: `
         )
         .setTimestamp();
@@ -228,8 +263,7 @@ class Util {
             GiveawayData.endTime / 1000
           )}:R> (<t:${Math.floor(
             GiveawayData.endTime / 1000
-          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${
-            GiveawayData.entryCount
+          )}:f>)\nHosted by: <@${GiveawayData.hostId}>\nEntries: **${GiveawayData.entryCount
           }**\nWinners: **${winnerMentions}**`
         )
         .setTimestamp();
@@ -278,43 +312,16 @@ class Util {
     }
   }
 
- /**
-   *
-   * @param {import("discord.js").Interaction | import("discord.js").Message} context
-   * @param {Array<EmbedBuilder>} embeds
-   */
+  /**
+    *
+    * @param {import("discord.js").Interaction | import("discord.js").Message} context
+    * @param {Array<EmbedBuilder>} embeds
+    */
 
- async paginate(context, embeds) {
-  let currentPage = 0;
-  const message =
-    context instanceof Message ? await context.channel.send({
-      embeds: [
-        embeds[currentPage]
-      ],
-      components: [
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Primary)
-            .setCustomId("1")
-            .setEmoji({ name: "⏮️" })
-            .setDisabled(true),
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setCustomId("2")
-            .setEmoji({ name: "⏪" })
-            .setDisabled(true),
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setCustomId("3")
-            .setEmoji({ name: "⏩" }),
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Primary)
-            .setCustomId("4")
-            .setEmoji({ name: "⏭️" })
-        ),
-      ],
-    })
-      : await context.followUp({
+  async paginate(context, embeds) {
+    let currentPage = 0;
+    const message =
+      context instanceof Message ? await context.channel.send({
         embeds: [
           embeds[currentPage]
         ],
@@ -340,180 +347,207 @@ class Util {
               .setEmoji({ name: "⏭️" })
           ),
         ],
-      });
-  const collector = message.createMessageComponentCollector({
-    time: 300000,
-    filter: ({ member: { id: memberId } }) => memberId === context.member.id,
-  });
-  collector.on("collect",
-    /**
-     * 
-     * @param {import('discord.js').ButtonInteraction} interaction
-     * @returns 
-     */
-    async (interaction) => {
-      switch (interaction.customId) {
-        case "1": {
-          await interaction.deferUpdate();
-          currentPage = 0;
-          return message.edit({
-            embeds: [
-              embeds[currentPage]
-            ],
-            components: [
-              new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("1")
-                  .setEmoji({ name: "⏮️" })
-                  .setDisabled(true),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("2")
-                  .setEmoji({ name: "⏪" })
-                  .setDisabled(true),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("3")
-                  .setEmoji({ name: "⏩" }),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("4")
-                  .setEmoji({ name: "⏭️" })
-              ),
-            ],
-          });
-        }
-        case "2": {
-          await interaction.deferUpdate();
-          --currentPage;
-          return message.edit({
-            embeds: [
-              embeds[currentPage]
-            ],
-            components: [
-              new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("1")
-                  .setEmoji({ name: "⏮️" })
-                  .setDisabled(currentPage === 0),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("2")
-                  .setEmoji({ name: "⏪" })
-                  .setDisabled(currentPage === 0),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("3")
-                  .setEmoji({ name: "⏩" })
-                  .setDisabled(false),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("4")
-                  .setEmoji({ name: "⏭️" })
-                  .setDisabled(false)
-              ),
-            ],
-          });
-        }
-        case "3": {
-          await interaction.deferUpdate();
-          currentPage++;
-          return message.edit({
-            embeds: [
-              embeds[currentPage]
-            ],
-            components: [
-              new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("1")
-                  .setEmoji({ name: "⏮️" })
-                  .setDisabled(false),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("2")
-                  .setEmoji({ name: "⏪" })
-                  .setDisabled(false),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("3")
-                  .setEmoji({ name: "⏩" })
-                  .setDisabled(currentPage === embeds.length - 1),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("4")
-                  .setEmoji({ name: "⏭️" })
-                  .setDisabled(currentPage === embeds.length - 1)
-              ),
-            ],
-          });
-        }
-        case "4": {
-          await interaction.deferUpdate();
-          currentPage = embeds.length - 1;
-          return message.edit({
-            embeds: [
-              embeds[currentPage]
-            ],
-            components: [
-              new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("1")
-                  .setEmoji({ name: "⏮️" }),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("2")
-                  .setEmoji({ name: "⏪" }),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Secondary)
-                  .setCustomId("3")
-                  .setEmoji({ name: "⏩" })
-                  .setDisabled(true),
-                new ButtonBuilder()
-                  .setStyle(ButtonStyle.Primary)
-                  .setCustomId("4")
-                  .setEmoji({ name: "⏭️" })
-                  .setDisabled(true)
-              ),
-            ],
-          });
-        }
-      }
-    });
-  collector.on("end", () => {
-    return message
-      .edit({
-        components: [
-          new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setStyle(ButtonStyle.Primary)
-              .setCustomId("1")
-              .setEmoji({ name: "⏮️" })
-              .setDisabled(true),
-            new ButtonBuilder()
-              .setStyle(ButtonStyle.Secondary)
-              .setCustomId("2")
-              .setEmoji({ name: "⏪" })
-              .setDisabled(true),
-            new ButtonBuilder()
-              .setStyle(ButtonStyle.Secondary)
-              .setCustomId("3")
-              .setEmoji({ name: "⏩" })
-              .setDisabled(true),
-            new ButtonBuilder()
-              .setStyle(ButtonStyle.Primary)
-              .setCustomId("4")
-              .setEmoji({ name: "⏭️" })
-              .setDisabled(true)
-          ),
-        ],
       })
-      .catch(() => null);
-  });
-}
+        : await context.followUp({
+          embeds: [
+            embeds[currentPage]
+          ],
+          components: [
+            new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId("1")
+                .setEmoji({ name: "⏮️" })
+                .setDisabled(true),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Secondary)
+                .setCustomId("2")
+                .setEmoji({ name: "⏪" })
+                .setDisabled(true),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Secondary)
+                .setCustomId("3")
+                .setEmoji({ name: "⏩" }),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId("4")
+                .setEmoji({ name: "⏭️" })
+            ),
+          ],
+        });
+    const collector = message.createMessageComponentCollector({
+      time: 300000,
+      filter: ({ member: { id: memberId } }) => memberId === context.member.id,
+    });
+    collector.on("collect",
+      /**
+       * 
+       * @param {import('discord.js').ButtonInteraction} interaction
+       * @returns 
+       */
+      async (interaction) => {
+        switch (interaction.customId) {
+          case "1": {
+            await interaction.deferUpdate();
+            currentPage = 0;
+            return message.edit({
+              embeds: [
+                embeds[currentPage]
+              ],
+              components: [
+                new ActionRowBuilder().addComponents(
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("1")
+                    .setEmoji({ name: "⏮️" })
+                    .setDisabled(true),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("2")
+                    .setEmoji({ name: "⏪" })
+                    .setDisabled(true),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("3")
+                    .setEmoji({ name: "⏩" }),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("4")
+                    .setEmoji({ name: "⏭️" })
+                ),
+              ],
+            });
+          }
+          case "2": {
+            await interaction.deferUpdate();
+            --currentPage;
+            return message.edit({
+              embeds: [
+                embeds[currentPage]
+              ],
+              components: [
+                new ActionRowBuilder().addComponents(
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("1")
+                    .setEmoji({ name: "⏮️" })
+                    .setDisabled(currentPage === 0),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("2")
+                    .setEmoji({ name: "⏪" })
+                    .setDisabled(currentPage === 0),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("3")
+                    .setEmoji({ name: "⏩" })
+                    .setDisabled(false),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("4")
+                    .setEmoji({ name: "⏭️" })
+                    .setDisabled(false)
+                ),
+              ],
+            });
+          }
+          case "3": {
+            await interaction.deferUpdate();
+            currentPage++;
+            return message.edit({
+              embeds: [
+                embeds[currentPage]
+              ],
+              components: [
+                new ActionRowBuilder().addComponents(
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("1")
+                    .setEmoji({ name: "⏮️" })
+                    .setDisabled(false),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("2")
+                    .setEmoji({ name: "⏪" })
+                    .setDisabled(false),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("3")
+                    .setEmoji({ name: "⏩" })
+                    .setDisabled(currentPage === embeds.length - 1),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("4")
+                    .setEmoji({ name: "⏭️" })
+                    .setDisabled(currentPage === embeds.length - 1)
+                ),
+              ],
+            });
+          }
+          case "4": {
+            await interaction.deferUpdate();
+            currentPage = embeds.length - 1;
+            return message.edit({
+              embeds: [
+                embeds[currentPage]
+              ],
+              components: [
+                new ActionRowBuilder().addComponents(
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("1")
+                    .setEmoji({ name: "⏮️" }),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("2")
+                    .setEmoji({ name: "⏪" }),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setCustomId("3")
+                    .setEmoji({ name: "⏩" })
+                    .setDisabled(true),
+                  new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setCustomId("4")
+                    .setEmoji({ name: "⏭️" })
+                    .setDisabled(true)
+                ),
+              ],
+            });
+          }
+        }
+      });
+    collector.on("end", () => {
+      return message
+        .edit({
+          components: [
+            new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId("1")
+                .setEmoji({ name: "⏮️" })
+                .setDisabled(true),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Secondary)
+                .setCustomId("2")
+                .setEmoji({ name: "⏪" })
+                .setDisabled(true),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Secondary)
+                .setCustomId("3")
+                .setEmoji({ name: "⏩" })
+                .setDisabled(true),
+              new ButtonBuilder()
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId("4")
+                .setEmoji({ name: "⏭️" })
+                .setDisabled(true)
+            ),
+          ],
+        })
+        .catch(() => null);
+    });
+  }
 
 }
 module.exports = Util;

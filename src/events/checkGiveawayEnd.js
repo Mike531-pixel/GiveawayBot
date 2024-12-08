@@ -17,7 +17,7 @@ module.exports = async (client) => {
       console.error("Error checking giveaways:", error);
     }
 
-    setTimeout(checkGiveaways, 3000);
+    setTimeout(checkGiveaways, 5000);
   };
 
   checkGiveaways();

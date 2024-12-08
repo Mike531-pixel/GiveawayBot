@@ -35,16 +35,13 @@ console.log(activeGiveaways)
           });
         }
 
-        // Filter choices based on user's input
         const filteredChoices = choices.filter((choice) =>
           choice.name.toLowerCase().includes(focusedValue.toLowerCase())
         );
 
-        // Respond with the filtered choices (limit to 25)
         await interaction.respond(filteredChoices.slice(0, 25));
       } catch (error) {
         console.error("Error in autocomplete handler:", error);
-        // Respond with an error message
         await interaction.respond([
           {
             name: "Error fetching giveaways",
@@ -69,11 +66,10 @@ console.log(activeGiveaways)
     if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
       
       if (interaction.commandName === "end") {
-        console.log("Command is 'end'");  // Log to confirm correct command
+        console.log("Command is 'end'"); 
         const focusedOption = interaction.options.getFocused();
-        console.log("Focused option:", focusedOption);  // Log focused option
+        console.log("Focused option:", focusedOption); 
   
-        // Fetch active giveaways for the current guild
         let activeGiveaways;
         try {
           activeGiveaways = await guildSchema.find({
@@ -101,9 +97,8 @@ console.log(activeGiveaways)
           value: giveaway.messageId,
         }));
   
-        console.log("Choices:", choices);  // Log choices to confirm they're being populated
+        console.log("Choices:", choices);  
   
-        // Filter choices based on the input
         const filteredChoices = choices.filter((choice) =>
           choice.name.toLowerCase().includes(focusedOption.toLowerCase())
         );

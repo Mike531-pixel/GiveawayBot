@@ -51,7 +51,6 @@ module.exports = {
       });
     }
 
-    // Generate embed pages
     const list = [];
     for (let i = 0; i < activeGiveaways.length; i += 10) {
       const pageGiveaways = activeGiveaways.slice(i, i + 10);
@@ -71,7 +70,6 @@ module.exports = {
       );
     }
 
-    // Prepare embed for each page
     const embeds = [];
     for (let i = 0; i < list.length; i++) {
       embeds.push(
@@ -85,7 +83,6 @@ module.exports = {
       );
     }
 
-    // Paginate the embeds
     return client.util.paginate(context, embeds);
   },
 };
