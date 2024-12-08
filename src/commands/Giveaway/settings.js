@@ -9,7 +9,7 @@ module.exports = {
     const guildData = await data.findOne({ id: context.guildId });
     return context.createMessage({
       content: `<:yay:1310201036732104746> **Current Giveaway Settings:**
-        - Color: ${guildData?.giveawayColor || "Not set"}
+        - Color: ${guildData?.embedColor || "Not set"} \n
         - Emoji: ${guildData?.giveawayEmoji || "Not set"}`,
     });
   },
