@@ -42,6 +42,7 @@ class GiveawayBot extends Client {
     this.events = new Collection();
     this.commands = new Collection();
     this.settings = settings;
+    this.owners = this.settings.dev;
     this.util = new Util(this);
   }
 
