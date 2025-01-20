@@ -18,7 +18,7 @@ module.exports = {
         .setColor(guildData.embedColor)
           .setTitle("Hold giveaways quickly and easily!")
           .setDescription(
-            `Hello! I'm **GiveawayBot**, and I'm here to make it as easy as possible to hold giveaways on your Discord server! I was created by [random.js](https://discord.com/users/878975596623986700) (<@878975596623986700>). \nDon't forget to start this project at **https://github.com/ItzRandom23/GiveawayBot/**!`
+            `Hello! I'm **GiveawayBot**, and I'm here to make it as easy as possible to hold giveaways on your Discord server! I was created by [random.js](https://discord.com/users/878975596623986700) (<@878975596623986700>). \nDon't forget to star this project at **https://github.com/ItzRandom23/GiveawayBot/**!`
           )
           .addFields({
             name: "📊 Stats",
