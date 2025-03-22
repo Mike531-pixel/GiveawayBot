@@ -29,14 +29,5 @@ To install and run the bot locally, follow these steps:
    npm start
    ```
 
-## Support
-
-For support and to join our community, visit our [Discord server](https://discord.gg/ZmyjpJ5RFq).
-
-## Contributing
-
-If you'd like to contribute to the project, please fork the repository and submit a pull request with your changes. We welcome all contributions!
-
 ## Note
-
-The code uses the latest version of modules and dependencies to ensure compatibility and the latest features.
+This code is having some bugs use if you can fix them ( related to ephemeral messages in discord.js )
