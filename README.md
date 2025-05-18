@@ -30,4 +30,6 @@ To install and run the bot locally, follow these steps:
    ```
 
 ## Note
-This code is having some bugs use if you can fix them ( related to ephemeral messages in discord.js )
+This code is having some bugs use if you can fix them ( related to ephemeral messages in discord.js )  - March 2025
+
+Okay I am back guys i will fix this code soon this month - May 2025
